@@ -28,22 +28,22 @@ obj.emacsAppName = "Emacs"
 
 require ("hs.ipc")
 
-if not hs.ipc.cliStatus() then
-   hs.alert("hs is not installed.. Installing in default location.. This might not work for M1 emacs")
-   -- if this fails, try to install to a different location
-   -- e.g. hs.ipc.cliInstall('/Users/<yourusername>/bin') and
-   -- add the directory to your path
-   hs.ipc.cliInstall()
-   if not hs.ipc.cliStatus() then
-      hs.alert("Unable to install ipc module in /usr/local. editWithEmacs will not function.")
-      print("\n\neditWithEmacs: unable to install ipc module. You might have to do it manually. This works for M1 macs.",
-            "Make sure you can execute hs from command line. See documentation of hs.ipc\n",
-            "For example: at /usr/local/bin do\n",
-            "sudo ln -s /Applications/Hammerspoon.app/Contents/Frameworks/hs/hs .\n",
-            "\n")
-      return obj
-   end
-end
+-- if not hs.ipc.cliStatus() then
+--    hs.alert("hs is not installed.. Installing in default location.. This might not work for M1 emacs")
+--    -- if this fails, try to install to a different location
+--    -- e.g. hs.ipc.cliInstall('/Users/<yourusername>/bin') and
+--    -- add the directory to your path
+--    hs.ipc.cliInstall()
+--    if not hs.ipc.cliStatus() then
+--       hs.alert("Unable to install ipc module in /usr/local. editWithEmacs will not function.")
+--       print("\n\neditWithEmacs: unable to install ipc module. You might have to do it manually. This works for M1 macs.",
+--             "Make sure you can execute hs from command line. See documentation of hs.ipc\n",
+--             "For example: at /usr/local/bin do\n",
+--             "sudo ln -s /Applications/Hammerspoon.app/Contents/Frameworks/hs/hs .\n",
+--             "\n")
+--       return obj
+--    end
+-- end
 
 -- Open the editor and give it focus.
 function obj:openEditor()
@@ -119,6 +119,8 @@ function obj:endEditing(everything)
       end
    end
 
+   -- switch input method
+   hs.execute("macism com.apple.keylayout.ABC", true)
 end
 
 print("Finished loading editWithEmacs.spoon" )

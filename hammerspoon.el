@@ -43,6 +43,9 @@
 (defvar hammerspoon-edit-minor-map nil
   "Keymap used in hammer-edit-minor-mode.")
 
+(defvar hammerspoon-binary (executable-find "hs")
+  "Binary of hs.")
+
 (unless hammerspoon-edit-minor-map
   (let ((map (make-sparse-keymap)))
 
@@ -63,6 +66,7 @@
   ;; Emacs undo can work
   )
 
+;;;###autoload
 (defun hammerspoon-toggle-mode ()
   "Toggle from Markdown Mode to Org Mode."
   (interactive)
@@ -71,12 +75,12 @@
     (markdown-mode))
   (hammerspoon-edit-minor-mode))
 
+;;;###autoload
 (defun hammerspoon-do (command)
   "Send Hammerspoon the given COMMAND."
   (interactive "sHammerspoon Command:")
-  (setq hs-binary (executable-find "hs"))
-  (if hs-binary
-      (call-process hs-binary
+  (if hammerspoon-binary
+      (call-process hammerspoon-binary
                     nil 0 nil
                     "-c"
                     command)
@@ -86,6 +90,7 @@
   "Show given MESSAGE via Hammerspoon's alert system."
   (hammerspoon-do (concat "hs.alert.show('" message "', 1)")))
 
+;;;###autoload
 (defun hammerspoon-test ()
   "Show a test message via Hammerspoon's alert system.
 
@@ -93,25 +98,32 @@ If you see a message, Hammerspoon is working correctly."
   (interactive)
   (hammerspoon-alert "Hammerspoon test message..."))
 
+;;;###autoload
 (defun hammerspoon-edit-end ()
   "Send, via Hammerspoon, contents of buffer back to originating window."
   (interactive)
   (mark-whole-buffer)
-  (call-interactively 'kill-ring-save)
+  (let ((x-select-enable-clipboard t))
+    (call-interactively 'kill-ring-save))
   (hammerspoon-do (concat "spoon.editWithEmacs:endEditing(False)"))
-  (previous-buffer))
+  ;; (previous-buffer)
+  (delete-frame (selected-frame)))
 
+;;;###autoload
 (defun hammerspoon-edit-begin ()
   "Receive, from Hammerspoon, text to edit in Emacs"
   (interactive)
   (let ((hs-edit-buffer (get-buffer-create hammerspoon-buffer-name)))
     (switch-to-buffer hs-edit-buffer)
     (erase-buffer) ; Ensure we have a clean buffer
-    (yank)
+    (clipboard-yank)
     (funcall hammerspoon-buffer-mode)
     (hammerspoon-edit-minor-mode)
-    (message "Type C-c C-c to send back to originating window")
-    (exchange-point-and-mark)))
+    (exchange-point-and-mark)
+    (when (featurep 'evil)
+      (goto-char (point-max))
+      (evil-insert-state))
+    (message "Type C-c C-c to send back to originating window")))
 
 
 (provide 'hammerspoon)
